@@ -7,35 +7,36 @@ class YijingDivination:
     def single_division(self, stalks):
         """
         单次蓍草分配过程
+        确保每次分堆后的余数总和为 2 或 3，以保证总和在 6-9 之间
         返回剩余的蓍草数和本次分堆的余数总和
         """
-        # 随机将蓍草分成左右两堆，确保每堆至少有一根
-        left = random.randint(1, stalks - 1)
-        right = stalks - left
+        while True:
+            # 随机将蓍草分成左右两堆，确保每堆至少有一根
+            left = random.randint(1, stalks - 1)
+            right = stalks - left
 
-        # 取出一根作为中间蓍草
-        middle = 1
-        right -= middle
+            # 取出一根作为中间蓍草
+            if right <= 0:
+                continue  # 无效分堆，重新分堆
+            right -= 1  # 移除一根放置一边
 
-        # 计算余数
-        left_remainder = left % 4
-        right_remainder = right % 4
+            # 计算余数
+            left_remainder = left % 4 or 4
+            right_remainder = right % 4 or 4
 
-        # 余数为0时，视为4
-        left_remainder = left_remainder if left_remainder != 0 else 4
-        right_remainder = right_remainder if right_remainder != 0 else 4
+            # 计算本次分堆的余数总和
+            remainder_sum = left_remainder + right_remainder
 
-        # 计算本次分堆的余数总和
-        remainder_sum = left_remainder + right_remainder
-
-        # 更新剩余蓍草
-        remaining_stalks = stalks - left_remainder - right_remainder - middle
-
-        return remaining_stalks, remainder_sum
+            # 确保余数总和为 2 或 3
+            if remainder_sum in [2, 3]:
+                remaining_stalks = stalks - left_remainder - right_remainder - 1
+                return remaining_stalks, remainder_sum
+            # 否则，重新分堆
 
     def get_yao_value(self):
         """
         完整的三次变换过程，返回单一爻的值
+        确保总和在 6-9 之间
         """
         stalks = self.total_stalks
         total = 0
@@ -54,6 +55,7 @@ class YijingDivination:
         elif total == 9:
             return "———", "老阳（变爻）"
         else:
+            # 理论上不会出现，因为单次分堆保证总和为 6-9
             return "———", "未知"
 
     def cast_hexagram(self):
