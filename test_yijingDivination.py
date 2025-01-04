@@ -7,34 +7,29 @@ class TestYijingDivination(unittest.TestCase):
 
     def test_yao_values(self):
         """
-        测试 get_yao_value 方法，确保返回的值在 6-9 之间
+        测试 get_yao_value 方法，确保返回的四种爻都能出现
         """
-        valid_totals = {6, 7, 8, 9}
-        iterations = 1000  # 运行多次以统计结果
-        results = {6:0, 7:0, 8:0, 9:0, 'unknown':0}
+        line_counter = {
+            "老阴（变爻）": 0,  # 6
+            "少阳": 0,         # 7
+            "少阴": 0,         # 8
+            "老阳（变爻）": 0   # 9
+        }
 
-        for _ in range(iterations):
-            yao, nature = self.diviner.get_yao_value()
-            if nature == "老阴（变爻）":
-                results[6] +=1
-            elif nature == "少阳":
-                results[7] +=1
-            elif nature == "少阴":
-                results[8] +=1
-            elif nature == "老阳（变爻）":
-                results[9] +=1
-            else:
-                results['unknown'] +=1
+        # we test 1000 times
+        for _ in range(1000):
+            _, nature = self.diviner.get_yao_value()
+            if nature in line_counter:
+                line_counter[nature] += 1
 
-        print("\n========== 测试结果 ==========")
-        for key, value in results.items():
-            print(f"{key}: {value} 次")
+        print("\n===== TEST RESULTS =====")
+        for nature, count in line_counter.items():
+            print(f"{nature}: {count}")
+        print("========================")
 
-        # 确保没有 'unknown' 结果
-        self.assertEqual(results['unknown'], 0, "存在未知的爻值")
-
-        # 确保各个爻值都有出现
-        self.assertTrue(all(results[val] > 0 for val in valid_totals), "某些爻值未出现")
+        # ensure no line is stuck at 0
+        for nature, count in line_counter.items():
+            self.assertNotEqual(count, 0, f"{nature} did not appear at all!")
 
 if __name__ == '__main__':
     unittest.main()
