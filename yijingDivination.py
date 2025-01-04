@@ -155,20 +155,62 @@ class YijingDivination:
             return f"{chinese}卦 ({pinyin})"
         return "未知卦象"
 
+    def get_transformed_hexagram(self, hexagram, natures):
+        """获取变卦"""
+        transformed = []
+        for i, (yao, nature) in enumerate(zip(hexagram, natures)):
+            if "变爻" in nature:  # 如果是变爻
+                # 老阴变少阳，老阳变少阴
+                transformed.append("———" if yao == "— —" else "— —")
+            else:
+                transformed.append(yao)
+        return transformed
+
+    def get_changing_lines(self, natures):
+        """获取变爻的位置"""
+        return [i + 1 for i, nature in enumerate(natures) if "变爻" in nature]
+
+    def display_hexagram(self, hexagram, changing_lines=None, position=""):
+        """显示卦象，标记变爻位置"""
+        if changing_lines is None:
+            changing_lines = []
+        
+        print(f"\n{position}卦象（自下而上）：")
+        for i, yao in enumerate(reversed(hexagram), 1):
+            line_num = 7 - i  # Convert to bottom-up numbering
+            if line_num in changing_lines:
+                print(f"{yao} ◈ ({line_num})")  # 变爻标记
+            else:
+                print(f"{yao}   ({line_num})")
+
 def main():
     print("欢迎来到古代占卜模拟器！")
     input("请心中默想你的问题，然后按回车继续...")
 
     diviner = YijingDivination()
     hexagram, natures = diviner.cast_hexagram()
-
-    print("\n========== 卦象形成 ==========")
-    print("卦象（自下而上）：")
-    for yao in reversed(hexagram):
-        print(yao)
-
-    # 显示卦名
-    print(f"\n本卦：{diviner.get_hexagram_name(hexagram)}")
+    
+    # 获取变爻位置
+    changing_lines = diviner.get_changing_lines(natures)
+    
+    print("\n========== 卦象解析 ==========")
+    
+    # 显示本卦
+    original_name = diviner.get_hexagram_name(hexagram)
+    print(f"\n本卦：{original_name}")
+    diviner.display_hexagram(hexagram, changing_lines, "本")
+    
+    # 如果有变爻，显示变卦
+    if changing_lines:
+        transformed = diviner.get_transformed_hexagram(hexagram, natures)
+        transformed_name = diviner.get_hexagram_name(transformed)
+        print(f"\n之卦：{transformed_name}")
+        diviner.display_hexagram(transformed, position="变")
+        
+        print("\n变爻位置：", end="")
+        print("第" + "、第".join(str(pos) for pos in changing_lines) + "爻")
+    else:
+        print("\n无变爻")
 
     print("\n========== 爻的性质 ==========")
     for i, nature in enumerate(reversed(natures), 1):
